@@ -1,0 +1,8 @@
+- hosts: CentOS7
+  tasks:
+    # play #1, task #1
+    - name: hosts are reachable
+      ping:
+      tags: test
+
+- include: ../

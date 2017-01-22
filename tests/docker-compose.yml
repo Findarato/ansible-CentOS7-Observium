@@ -1,0 +1,9 @@
+## docker-compose.yml
+version: "2"
+services:
+  CentOS7:
+    image: "centos:centos7"
+    tty: True
+
+## tests/inventory
+CentOS7 ansible_user=root

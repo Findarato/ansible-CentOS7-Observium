@@ -1,38 +1,68 @@
 ---
-services: docker
+# services: docker
+#
+# env:
+#   - distro: centos7
+#     init: /usr/lib/systemd/systemd
+#     run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+#     playbook: test.yml
+#   # - distro: ubuntu1604
+#   #   init: /lib/systemd/systemd
+#   #   run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+#   #   playbook: test.yml
+#   # - distro: ubuntu1404
+#   #   init: /sbin/init
+#   #   run_opts: ""
+#   #   playbook: test.yml
+#
+# services:
+#   - docker
+#
+# before_install:
+#   # Pull container
+#   - 'docker pull geerlingguy/docker-${distro}-ansible:latest'
+#
+# script:
+#   - container_id=$(mktemp)
+#   # Run container in detached state.
+#   - 'docker run --detach --volume="${PWD}":/etc/ansible/roles/role_under_test:ro ${run_opts} geerlingguy/docker-${distro}-ansible:latest "${init}" > "${container_id}"'
+#
+#   # Ansible syntax check.
+#   - 'docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/role_under_test/${playbook} --syntax-check'
+#
+#   # Test role.
+#   - 'docker exec "$(cat ${container_id})" ansible-playbook /etc/ansible/roles/role_under_test/${playbook}'
 
-env:
-  - distro: centos7
-    init: /usr/lib/systemd/systemd
-    run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-    playbook: test.yml
-  # - distro: ubuntu1604
-  #   init: /lib/systemd/systemd
-  #   run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-  #   playbook: test.yml
-  # - distro: ubuntu1404
-  #   init: /sbin/init
-  #   run_opts: ""
-  #   playbook: test.yml
+# notifications:
+#   email: false
+#   slack: westchesterpublib:saU5CP0lYF7mHCkvRFNBwkrX
 
-services:
-  - docker
 
-before_install:
-  # Pull container
-  - 'docker pull geerlingguy/docker-${distro}-ansible:latest'
 
-script:
-  - container_id=$(mktemp)
-  # Run container in detached state.
-  - 'docker run --detach --volume="${PWD}":/etc/ansible/roles/role_under_test:ro ${run_opts} geerlingguy/docker-${distro}-ansible:latest "${init}" > "${container_id}"'
 
-  # Ansible syntax check.
-  - 'docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/role_under_test/${playbook} --syntax-check'
 
-  # Test role.
-  - 'docker exec "$(cat ${container_id})" ansible-playbook /etc/ansible/roles/role_under_test/${playbook}'
+  #
+  # ## .travis.yml
+  sudo: required
+  dist: trusty
 
-notifications:
-  email: false
-  slack: westchesterpublib:saU5CP0lYF7mHCkvRFNBwkrX
+  language: python
+  python: 2.7
+
+  services:
+    - docker
+
+  before_install:
+    # ensure apt-get cache is up-to-date
+    - sudo apt-get -qq update
+
+    # upgrade docker-engine to latest version
+    - export DEBIAN_FRONTEND=noninteractive
+    - sudo apt-get -qq -o Dpkg::Options::="--force-confnew" -y install docker-engine
+    - docker version
+
+  install:
+    - pip install goodplay
+
+  script:
+    - goodplay -v
