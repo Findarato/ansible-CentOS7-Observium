@@ -72,11 +72,10 @@
   tags: httpd, service
   notify: Restart httpd
 
-- name: Copy Defaults to live
-  command: cp config.php.default config.php
-  args:
-    chdir: "{{install_dir}}"
-    creates: config.php
+- name: Copy Observium config file
+  template:
+    src: config.php.j2
+    dest: "{{install_dir}}/config.php"
 
 - name: Start Mariadb
   systemd:
@@ -85,7 +84,6 @@
       enabled: yes
       daemon_reload: yes
   tags: mariadb, service
-
 
 - name: Fix Mariadb Root User
   command: /usr/bin/mysqladmin -u root password '{{root_pw}}'
@@ -101,64 +99,7 @@
     priv: "observium.*:ALL"
     state: present
 
-- name: Copy Defaults to live
-  command: cp config.php.default config.php
-  args:
-    chdir: "{{install_dir}}"
-    creates: config.php
-
 - name: Setup the MySQL database and insert the default schema
   command: php discovery.php -u
   args:
       chdir: "{{install_dir}}"
-
-- name: Setup fping in config
-  lineinfile:
-    path: "{{install_dir}}/config.php"
-    state: present
-    regexp: "$config['fping']"
-    line: "$config['fping'] = \"/usr/sbin/fping\";"
-    backrefs: yes
-
-
-
-#
-#
-#
-#
-#
-#
-#
-# - name: Copy Docker Repo
-#   copy:
-#     src: docker.repo
-#     dest: /etc/yum.repos.d/docker.repo
-#     owner: root
-#     group: root
-#     mode: 0644
-#
-# - name: Install Docker
-#   yum:
-#     name: "{{ item }}"
-#     state: present
-#   with_items:
-#     - docker-engine
-#     - python-pip
-#
-# - name: Start Docker
-#   service:
-#       name: yum-cron
-#       state: started
-#       enabled: yes
-#       daemon_reload: yes
-#   tags: yum, service
-#
-# - name: Install Docker Compose
-#   pip:
-#     state: present
-#     name: docker-compose
-#
-# - name: Install Docker Compose
-#   pip:
-#     state: present
-#     name: docker-py>=1.7.0
