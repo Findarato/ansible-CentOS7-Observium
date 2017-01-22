@@ -4,7 +4,12 @@
 - name: restart systemD
   service: daemon_reload=yes
 
-- name: Restart firewalld
+- name: Restart httpd
   service:
-      name: firewalld
+      name: httpd
+      state: restarted
+
+- name: Restart mariadb
+  service:
+      name: mariadb
       state: restarted

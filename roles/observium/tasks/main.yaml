@@ -1,0 +1,164 @@
+- name: Install Important Repos
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    - https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+    - http://yum.opennms.org/repofiles/opennms-repo-stable-rhel7.noarch.rpm
+
+- name: Install support programs for Observium php7
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - wget.x86_64
+    - httpd.x86_64
+    - php70w.x86_64
+    - php70w-opcache.x86_64
+    - php70w-mysql.x86_64
+    - php70w-gd.x86_64
+    - php70w-posix
+    - php70w-mcrypt.x86_64
+    - php70w-pear.noarch
+    - cronie.x86_64
+    - net-snmp.x86_64
+    - net-snmp-utils.x86_64
+    - fping.x86_64
+    - mariadb-server.x86_64
+    - mariadb.x86_64
+    - MySQL-python.x86_64
+    - rrdtool.x86_64
+    - subversion.x86_64
+    - jwhois.x86_64
+    - ipmitool.x86_64
+    - graphviz.x86_64
+    - ImageMagick.x86_64
+
+
+# create a directory if it doesn't exist
+- name: Create observium install Directory
+  file:
+    path: "{{install_dir}}"
+    state: directory
+    mode: 0755
+
+- name: Unzip observium install
+  unarchive:
+    src: http://www.observium.org/observium-community-latest.tar.gz
+    dest: "{{install_dir}}"
+    remote_src: True
+
+- name: Create observium install Directory RRD
+  file:
+    path: "{{install_dir}}/rrd"
+    state: directory
+    owner: apache
+    group: apache
+    mode: 0755
+
+- name: Create observium install Directory logs
+  file:
+    path: "{{install_dir}}/logs"
+    state: directory
+    owner: apache
+    group: apache
+    mode: 0755
+
+- name: Copy HTTP Config File
+  template:
+    src: observium.conf.j2
+    dest: /etc/httpd/conf.d/observium.conf
+  tags: httpd, service
+  notify: Restart httpd
+
+- name: Copy Defaults to live
+  command: cp config.php.default config.php
+  args:
+    chdir: "{{install_dir}}"
+    creates: config.php
+
+- name: Start Mariadb
+  systemd:
+      name: mariadb
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  tags: mariadb, service
+
+
+- name: Fix Mariadb Root User
+  command: /usr/bin/mysqladmin -u root password '{{root_pw}}'
+
+- name: Create Observium Database
+  mysql_db:
+    name: observium
+    state: present
+
+- mysql_user:
+    name: observium
+    password: "{{observium_pw}}"
+    priv: "observium.*:ALL"
+    state: present
+
+- name: Copy Defaults to live
+  command: cp config.php.default config.php
+  args:
+    chdir: "{{install_dir}}"
+    creates: config.php
+
+- name: Setup the MySQL database and insert the default schema
+  command: php discovery.php -u
+  args:
+      chdir: "{{install_dir}}"
+
+- name: Setup fping in config
+  lineinfile:
+    path: "{{install_dir}}/config.php"
+    state: present
+    regexp: "$config['fping']"
+    line: "$config['fping'] = \"/usr/sbin/fping\";"
+    backrefs: yes
+
+
+
+#
+#
+#
+#
+#
+#
+#
+# - name: Copy Docker Repo
+#   copy:
+#     src: docker.repo
+#     dest: /etc/yum.repos.d/docker.repo
+#     owner: root
+#     group: root
+#     mode: 0644
+#
+# - name: Install Docker
+#   yum:
+#     name: "{{ item }}"
+#     state: present
+#   with_items:
+#     - docker-engine
+#     - python-pip
+#
+# - name: Start Docker
+#   service:
+#       name: yum-cron
+#       state: started
+#       enabled: yes
+#       daemon_reload: yes
+#   tags: yum, service
+#
+# - name: Install Docker Compose
+#   pip:
+#     state: present
+#     name: docker-compose
+#
+# - name: Install Docker Compose
+#   pip:
+#     state: present
+#     name: docker-py>=1.7.0

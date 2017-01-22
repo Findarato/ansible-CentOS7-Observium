@@ -1,0 +1,11 @@
+<VirtualHost *>
+   DocumentRoot {{install_dir}}/html/
+   ServerName  observium.domain.com
+   CustomLog {{install_dir}}/logs/access_log combined
+   ErrorLog {{install_dir}}/logs/error_log
+   <Directory "{{install_dir}}/html/">
+     AllowOverride All
+     Options FollowSymLinks MultiViews
+     Require all granted
+   </Directory>
+</VirtualHost>

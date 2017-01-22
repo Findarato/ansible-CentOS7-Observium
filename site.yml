@@ -5,6 +5,8 @@
 - hosts: all
   remote_user: root
   roles:
-    - common
-    - monitoring
-    - docker
+    # - common
+    # - monitoring
+    - observium
+  # var_files:
+  #   -
