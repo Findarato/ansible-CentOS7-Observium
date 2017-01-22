@@ -1,0 +1,63 @@
+- name: Install useful commandline programs
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nano
+    - wget
+    - yum-cron
+    - git
+    - firewalld
+    - epel-release
+
+- name: Start Yum Cron
+  systemd:
+      name: yum-cron
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  tags: yum, service
+
+- name: Install python bindings for SE Linux
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libselinux-python
+    - libsemanage-python
+
+- name: Install ntp
+  yum:
+      name: ntp
+      state: present
+  tags: ntp, service
+
+- name: Ntp Copy configuration file
+  template:
+    src: ntp.conf.j2
+    dest: /etc/ntp.conf
+  tags: ntp, service
+  notify: Restart ntp
+
+- name: Ntp start service
+  systemd:
+      name: ntpd
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  tags: ntp
+
+- name: Firewalld start service
+  systemd:
+      name: firewalld
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  tags: service
+
+- name: Firewalld Allow SSH
+  firewalld:
+    service: ssh
+    permanent: true
+    state: enabled
+  notify: Restart firewalld

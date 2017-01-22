@@ -1,0 +1,7 @@
+nrpeDriveMounts:
+  - name: root
+    path: /dev/mapper/centos_wpl--docker01-root
+  - name: boot
+    path: /dev/sda2
+  - name: home
+    path: /dev/mapper/centos_wpl--docker01-home

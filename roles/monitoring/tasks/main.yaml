@@ -1,0 +1,85 @@
+- name: Install Snmp
+  yum:
+      name: "{{ item }}"
+      state: present
+  with_items:
+    - epel-release
+    - net-snmp
+    - net-snmp-libs
+    - net-snmp-utils
+
+- name: Snmp Copy config
+  copy:
+    src: snmpd.conf
+    dest: /etc/snmp/snmpd.conf
+    owner: root
+    group: root
+    mode: 0600
+  notify: Restart snmpd
+
+- name: Snmp Start service
+  systemd:
+      name: snmpd
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  tags: snmpd, service
+
+- name: Install nrpe and plugins
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{nagiosPlugins}}"
+
+- name: Nrpe Start service
+  systemd:
+      name: nrpe
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  tags: nagios, service
+
+- name: Nrpe copy config
+  template:
+    src: nrpe.cfg.j2
+    dest: /etc/nagios/nrpe.cfg
+  tags: nrpe, service
+  notify: Restart nrpe
+
+- name: Nrpe copy command config
+  template:
+    src: monitor.cfg.j2
+    dest: /etc/nrpe.d/monitor.cfg
+  tags: nrpe, service
+  notify: Restart nrpe
+
+- name: Install firewalld
+  yum:
+      name: "{{ item }}"
+      state: present
+  with_items:
+    - epel-release
+    - firewalld
+
+- name: Firewalld start service
+  systemd:
+      name: firewalld
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  tags: service
+
+- name: Firewalld Allow nrpe
+  firewalld:
+    port: 5666/tcp
+    permanent: true
+    state: enabled
+  notify: Restart firewalld
+
+- name: Firewalld Allow snmp
+  firewalld:
+    port: 161/udp
+    permanent: true
+    state: enabled
+  notify: Restart firewalld

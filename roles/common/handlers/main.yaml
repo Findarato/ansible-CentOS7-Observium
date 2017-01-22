@@ -1,0 +1,17 @@
+---
+# Handlers for common notifications
+
+- name: Restart ntp
+  service:
+      name: ntpd
+      state: restarted
+
+- name: Restart firewalld
+  service:
+      name: firewalld
+      state: restarted
+
+- name: Restart snmpd
+  service:
+      name: snmpd
+      state: restarted

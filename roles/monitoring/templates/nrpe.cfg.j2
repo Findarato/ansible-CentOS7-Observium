@@ -1,0 +1,30 @@
+log_facility=daemon
+
+pid_file=/var/run/nrpe/nrpe.pid
+
+server_port={{nrpeInfo.port}}
+
+nrpe_user={{nrpeInfo.user}}
+
+nrpe_group={{nrpeInfo.group}}
+
+allowed_hosts={{nrpeInfo.allowedHosts}}
+
+dont_blame_nrpe=0
+
+allow_bash_command_substitution=0
+
+# nagios          ALL=(ALL) NOPASSWD: /usr/lib/nagios/plugins/
+
+debug=0
+
+command_timeout=60
+
+connection_timeout=300
+
+
+# INCLUDE CONFIG DIRECTORY
+# This directive allows you to include definitions from config files (with a
+# .cfg extension) in one or more directories (with recursion).
+
+include_dir=/etc/nrpe.d/

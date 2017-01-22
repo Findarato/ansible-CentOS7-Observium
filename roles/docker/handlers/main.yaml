@@ -1,0 +1,10 @@
+---
+# Handlers for common notifications
+
+- name: restart systemD
+  service: daemon_reload=yes
+
+- name: Restart firewalld
+  service:
+      name: firewalld
+      state: restarted

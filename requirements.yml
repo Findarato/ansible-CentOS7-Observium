@@ -1,0 +1,4 @@
+---
+# Adding my own monitoring software in.
+# @TODO: Fully add in this role
+- src: Findarato.Monitoring
