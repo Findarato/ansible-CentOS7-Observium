@@ -1,3 +1,0 @@
-nrpeDriveMounts:
-  - name: boot
-    path: /dev/sda2

@@ -1,2 +1,1 @@
-include: vault.yml
 install_dir: "/opt/observium"

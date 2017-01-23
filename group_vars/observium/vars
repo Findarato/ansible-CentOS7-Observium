@@ -1,0 +1,2 @@
+mysql_root_pw: "{{vault_mysql_root_pw}}"
+observium_pw: "{{vault_observium_pw}}"

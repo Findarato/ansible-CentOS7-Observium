@@ -1,39 +1,39 @@
-- name: Install Important Repos
-  yum:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    - https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-    - http://yum.opennms.org/repofiles/opennms-repo-stable-rhel7.noarch.rpm
-
-- name: Install support programs for Observium php7
-  yum:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - wget.x86_64
-    - httpd.x86_64
-    - php70w.x86_64
-    - php70w-opcache.x86_64
-    - php70w-mysql.x86_64
-    - php70w-gd.x86_64
-    - php70w-posix
-    - php70w-mcrypt.x86_64
-    - php70w-pear.noarch
-    - cronie.x86_64
-    - net-snmp.x86_64
-    - net-snmp-utils.x86_64
-    - fping.x86_64
-    - mariadb-server.x86_64
-    - mariadb.x86_64
-    - MySQL-python.x86_64
-    - rrdtool.x86_64
-    - subversion.x86_64
-    - jwhois.x86_64
-    - ipmitool.x86_64
-    - graphviz.x86_64
-    - ImageMagick.x86_64
+# - name: Install Important Repos
+#   yum:
+#     name: "{{ item }}"
+#     state: present
+#   with_items:
+#     - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+#     - https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+#     - http://yum.opennms.org/repofiles/opennms-repo-stable-rhel7.noarch.rpm
+#
+# - name: Install support programs for Observium php7
+#   yum:
+#     name: "{{ item }}"
+#     state: present
+#   with_items:
+#     - wget.x86_64
+#     - httpd.x86_64
+#     - php70w.x86_64
+#     - php70w-opcache.x86_64
+#     - php70w-mysql.x86_64
+#     - php70w-gd.x86_64
+#     - php70w-posix
+#     - php70w-mcrypt.x86_64
+#     - php70w-pear.noarch
+#     - cronie.x86_64
+#     - net-snmp.x86_64
+#     - net-snmp-utils.x86_64
+#     - fping.x86_64
+#     - mariadb-server.x86_64
+#     - mariadb.x86_64
+#     - MySQL-python.x86_64
+#     - rrdtool.x86_64
+#     - subversion.x86_64
+#     - jwhois.x86_64
+#     - ipmitool.x86_64
+#     - graphviz.x86_64
+#     - ImageMagick.x86_64
 
 
 # create a directory if it doesn't exist
@@ -43,11 +43,17 @@
     state: directory
     mode: 0755
 
+
+- name: download file with check (md5)
+  get_url:
+    url: http://www.observium.org/observium-community-latest.tar.gz
+    dest: /tmp/observium.tar.gz
+    checksum: md5:a2e1fa205e4d39d6cdf7291f9f15b92f
+
 - name: Unzip observium install
-  unarchive:
-    src: http://www.observium.org/observium-community-latest.tar.gz
-    dest: "{{install_dir}}"
-    remote_src: True
+  command: "/usr/bin/tar --strip-components=1 -zxf /tmp/observium.tar.gz -C {{install_dir}}"
+  args:
+    creates: "{{install_dir}}/INSTALL"
 
 - name: Create observium install Directory RRD
   file:
@@ -86,20 +92,35 @@
   tags: mariadb, service
 
 - name: Fix Mariadb Root User
-  command: /usr/bin/mysqladmin -u root password '{{root_pw}}'
+  command: "/usr/bin/mysqladmin -uroot -p{{mysql_root_pw}} ping"
+  register: result
+  # ok_when: "'mysqld is alive' in command_result.stdout"
+  # failed_when:
+  #     - "'Can't connect' in command_result.stderr"
+  #     - "'Access denied in command_result.stderr"
+  changed_when: "result.stdout !='mysqld is alive'"
+# mysqld is alive
 
 - name: Create Observium Database
   mysql_db:
     name: observium
     state: present
+    login_user: root
+    login_password: '{{mysql_root_pw}}'
 
 - mysql_user:
     name: observium
     password: "{{observium_pw}}"
     priv: "observium.*:ALL"
     state: present
+    login_user: root
+    login_password: '{{mysql_root_pw}}'
 
 - name: Setup the MySQL database and insert the default schema
   command: php discovery.php -u
+  register: observiumDiscovery
   args:
       chdir: "{{install_dir}}"
+  changed_when: >
+    "Database is up to date" not in observiumDiscovery.stdout
+#Database is up to date

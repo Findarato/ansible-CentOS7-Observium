@@ -1,0 +1,24 @@
+## playbook_name.yml
+# play #1
+- hosts: host1:host2
+  tasks:
+    # play #1, task #1
+    - name: first task name
+      module1:
+        arg1: value1
+        arg2: value2
+
+    # play #1, task #2
+    - name: second task name
+      module2:
+        arg1: value1
+        arg2: value2
+      tags: specialtag
+
+# play #2
+- hosts: host3
+  tasks:
+    # play #2, task #1
+    - name: another task name
+      module1:
+        arg1: value1
