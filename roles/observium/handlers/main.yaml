@@ -13,3 +13,13 @@
   service:
       name: mariadb
       state: restarted
+
+- name: Restart cron
+  service:
+      name: crond
+      state: restarted
+
+- name: Restart firewalld
+  service:
+      name: firewalld
+      state: restarted

@@ -13,6 +13,7 @@
 #     state: present
 #   with_items:
 #     - wget.x86_64
+#     - firewalld
 #     - httpd.x86_64
 #     - php70w.x86_64
 #     - php70w-opcache.x86_64
@@ -34,6 +35,13 @@
 #     - ipmitool.x86_64
 #     - graphviz.x86_64
 #     - ImageMagick.x86_64
+
+
+- name: Turn off SElinux
+  lineinfile:
+    dest: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: 'SELINUX=disabled'
 
 
 # create a directory if it doesn't exist
@@ -78,6 +86,13 @@
   tags: httpd, service
   notify: Restart httpd
 
+- name: Install cron
+  template:
+    src: observium.cron.j2
+    dest: /etc/cron.d/observium
+  tags: service
+  notify: Restart cron
+
 - name: Copy Observium config file
   template:
     src: config.php.j2
@@ -94,10 +109,6 @@
 - name: Fix Mariadb Root User
   command: "/usr/bin/mysqladmin -uroot -p{{mysql_root_pw}} ping"
   register: result
-  # ok_when: "'mysqld is alive' in command_result.stdout"
-  # failed_when:
-  #     - "'Can't connect' in command_result.stderr"
-  #     - "'Access denied in command_result.stderr"
   changed_when: "result.stdout !='mysqld is alive'"
 # mysqld is alive
 
@@ -124,3 +135,37 @@
   changed_when: >
     "Database is up to date" not in observiumDiscovery.stdout
 #Database is up to date
+
+
+- name: Firewalld start service
+  systemd:
+      name: firewalld
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  tags: service
+
+- name: Firewalld Allow HTTPD
+  firewalld:
+    service: http
+    permanent: true
+    state: enabled
+  notify: Restart firewalld
+
+- name: Add base admin user
+  command: "php ./adduser.php {{observium_admin}} {{observium_admin_pw}} 10"
+  register: addUser
+  args:
+      chdir: "{{install_dir}}"
+  changed_when: >
+    "User admin added successfully" in addUser.stdout
+
+- name: Setup Hosts to monitor
+  command: "php ./add_device.php -p {{monitoring_hosts.ip}} {{monitoring_hosts.community}} {{monitoring_hosts.version}}"
+  register: addDevice
+  args:
+      chdir: "{{install_dir}}"
+  changed_when: >
+    "Already got device" in addDevice.stdout
+  with_items:
+    - "{{ monitoring_hosts }}"

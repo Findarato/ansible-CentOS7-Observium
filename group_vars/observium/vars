@@ -1,2 +1,15 @@
 mysql_root_pw: "{{vault_mysql_root_pw}}"
 observium_pw: "{{vault_observium_pw}}"
+observium_admin: "admin"
+observium_admin_pw: "{{vault_observium_admin_pw}}"
+
+monitoring_hosts:
+    - ip: 10.1.1.1
+      community: public
+      version: v2c
+    - ip: 10.1.1.5
+      community: public
+      version: v2c
+    - ip: 10.1.1.119
+      community: public
+      version: 1
