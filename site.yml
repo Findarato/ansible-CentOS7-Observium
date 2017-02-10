@@ -8,5 +8,11 @@
     # - common
     # - monitoring
     - observium
+  vars_files:
+    - vars/vault.yml
+
+
+
+
   # var_files:
   #   -

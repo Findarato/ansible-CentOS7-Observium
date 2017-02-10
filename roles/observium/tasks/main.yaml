@@ -1,40 +1,40 @@
-# - name: Install Important Repos
-#   yum:
-#     name: "{{ item }}"
-#     state: present
-#   with_items:
-#     - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-#     - https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-#     - http://yum.opennms.org/repofiles/opennms-repo-stable-rhel7.noarch.rpm
-#
-# - name: Install support programs for Observium php7
-#   yum:
-#     name: "{{ item }}"
-#     state: present
-#   with_items:
-#     - wget.x86_64
-#     - firewalld
-#     - httpd.x86_64
-#     - php70w.x86_64
-#     - php70w-opcache.x86_64
-#     - php70w-mysql.x86_64
-#     - php70w-gd.x86_64
-#     - php70w-posix
-#     - php70w-mcrypt.x86_64
-#     - php70w-pear.noarch
-#     - cronie.x86_64
-#     - net-snmp.x86_64
-#     - net-snmp-utils.x86_64
-#     - fping.x86_64
-#     - mariadb-server.x86_64
-#     - mariadb.x86_64
-#     - MySQL-python.x86_64
-#     - rrdtool.x86_64
-#     - subversion.x86_64
-#     - jwhois.x86_64
-#     - ipmitool.x86_64
-#     - graphviz.x86_64
-#     - ImageMagick.x86_64
+- name: Install Important Repos
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    - https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+    - http://yum.opennms.org/repofiles/opennms-repo-stable-rhel7.noarch.rpm
+
+- name: Install support programs for Observium php7
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - wget.x86_64
+    - firewalld
+    - httpd.x86_64
+    - php70w.x86_64
+    - php70w-opcache.x86_64
+    - php70w-mysql.x86_64
+    - php70w-gd.x86_64
+    - php70w-posix
+    - php70w-mcrypt.x86_64
+    - php70w-pear.noarch
+    - cronie.x86_64
+    - net-snmp.x86_64
+    - net-snmp-utils.x86_64
+    - fping.x86_64
+    - mariadb-server.x86_64
+    - mariadb.x86_64
+    - MySQL-python.x86_64
+    - rrdtool.x86_64
+    - subversion.x86_64
+    - jwhois.x86_64
+    - ipmitool.x86_64
+    - graphviz.x86_64
+    - ImageMagick.x86_64
 
 
 - name: Turn off SElinux
